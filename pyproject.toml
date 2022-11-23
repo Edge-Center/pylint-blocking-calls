@@ -1,0 +1,21 @@
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool]
+
+[tool.poetry]
+name = "pylint-blocking-calls"
+version = "0.1.0"
+description = "Pylint plugin to detect blocking calls in async functions"
+authors = ["Aleksei Marashov <marashov-aleksey@yandex.ru>"]
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/Edge-Center/pylint-blocking-calls"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+pylint = "^2.15.6"
+
+[tool.pylint.master]
+load-plugins = "pylint_blocking_calls"
