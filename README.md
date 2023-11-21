@@ -2,14 +2,16 @@
 
 This is a pylint plugin that checks for blocking calls in your async python code.
 
-## Installation
+## Quickstart
+
+### Installation
 
 The best way to install the plugin is to use pip as follows:
 ```bash
 pip install pylint-blocking-calls
 ```
 
-## Usage
+### Usage
 
 Let's start with an example:
 
@@ -19,7 +21,7 @@ import time
 
 
 def blocking_function():
-    time.sleep(5)  # an example of a IO-bound operation
+    time.sleep(5)  # an example of an IO-bound operation
 
 
 async def async_function():
@@ -64,7 +66,7 @@ example.py:18:4: W0002: some_another_function -> blocking_function (blocking-cal
 Your code has been rated at 4.12/10
 ```
 
-## Plugin configuration
+### Plugin configuration
 
 Plugin supports configuration via the following environment variables:
 ```bash
@@ -77,9 +79,9 @@ export SKIP_MODULES=""  # comma-separated list of regexps that match module name
 export SKIP_DECORATED="" # comma-separated list of regexps that match decorator names that should be skipped
 ```
 
-See the [tests/test_blocking_calls.py](https://github.com/Edge-Center/pylint-blocking-calls/blob/main/tests/test_blocking_calls.py) file for a real configuration example.
+See the [tests/test_checker.py](./tests/test_checker.py) file for a real configuration example.
 
-## Production setup
+### Production setup
 
 The plugin is designed to be used in a CI/CD pipeline.
 
@@ -96,6 +98,29 @@ export SKIP_DECORATED="...."
 pylint --disable=blocking-call $(REPO_DIR)/src
 # run pylint with a single core to check for blocking calls
 pylint -j 1 --disable=all --enable=blocking-call $(REPO_DIR)/src
+```
+
+## Development
+
+### Install dependencies
+
+Prerequisites:
+- python 3.11 installed
+- poetry installed
+
+To install the dependencies, run:
+```shell
+poetry install --no-root
+poetry shell
+```
+
+The `--no-root` flag is important to install only dependencies, not the project itself.
+
+### Run tests
+
+Run tests with the command:
+```shell
+PYTHONPATH="$PYTHONPATH:$PWD" poetry run pytest tests/
 ```
 
 ## Motivation

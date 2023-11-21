@@ -16,11 +16,7 @@ def has_decorator(function_def: FunctionDef, *, decorator_name: str) -> bool:
 
 def get_function_decorator_names(function_def: FunctionDef) -> List[str]:
     """Get list of decorators which should be ignored"""
-    return [
-        node.as_string()
-        for node in getattr(function_def.decorators, "nodes", [])
-        if isinstance(node, nodes.Name)
-    ]
+    return [node.as_string() for node in getattr(function_def.decorators, "nodes", []) if isinstance(node, nodes.Name)]
 
 
 def get_call_node_hash(call: nodes.Call) -> str:
@@ -31,13 +27,13 @@ def get_call_node_hash(call: nodes.Call) -> str:
 def get_call_name(call: nodes.Call) -> Optional[str]:
     """Get the full dotted name of the function being called.
 
-    Replace the `self` and `cls` prefixes with full names of the classes.
+    Replace the `self` and `cls` prefixes with the full names of the classes.
 
     Return None if we can't determine the function name:
         "callable[0]()"
         "".join(...)"
 
-    Return full dotted name of the function in other cases:
+    Return full dotted name of the function in the other cases:
         "self.request.get" -> "Handler.request.get"
         "ironic_admin.node.list"
         "get_session_managed"
@@ -50,7 +46,9 @@ def get_call_name(call: nodes.Call) -> Optional[str]:
     # determine the dotted name of the function like "a.b.c.d"
     call_name_parts = []
     call_func = call.func
-    while True:
+    reasonable_calls_length = 100  # set some reasonable limit for the calls like `a.b.c. ...` to avoid an infinite loop
+    calls_length = 0
+    while calls_length < reasonable_calls_length:
         if isinstance(call_func, nodes.Attribute):
             call_name_parts.append(call_func.attrname)
             call_func = call_func.expr
@@ -60,7 +58,9 @@ def get_call_name(call: nodes.Call) -> Optional[str]:
             call_name_parts.append(call_func.name)
             break
         else:
+            # in this case name of the function can not be determined, return None
             return None
+        calls_length += 1
     call_name_parts = list(reversed(call_name_parts))
 
     # replace "cls" and "self" with the class name

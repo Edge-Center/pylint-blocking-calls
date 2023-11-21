@@ -2,7 +2,9 @@ import astroid
 import pylint.testutils
 
 from src.pylint_blocking_calls import helpers
-from src.pylint_blocking_calls.blocking_calls import BlockingCallsChecker
+from src.pylint_blocking_calls.checker import (
+    BlockingCallsChecker,
+)
 
 
 class TestBlockingCallsChecker(pylint.testutils.CheckerTestCase):
@@ -10,16 +12,16 @@ class TestBlockingCallsChecker(pylint.testutils.CheckerTestCase):
 
     def setup_method(self):
         super().setup_method()
-        self.checker.set_option(
+        self.checker.linter.set_option(
             "blocking-function-names",
             r"^.*auth\.get_auth_ref$,^.*barbican.*\..+$,^.*cinder.*\..+$,^.*glance.*\..+$,^.*heat.*\..+$,^.*ironic.*\..+$,^.*neutron.*\..+$,^.*nova.*\..+$,^.*octavia.*\..+$,^get_session$,^.*session.*\.(commit|delete|rollback|refresh|close)$,^.*session.*\..+\.get$,^requests\.(get|post|put|patch|delete)$,^.+\.(one|one_or_none|all|first)$,^.*keystone.*\.(access_rules|application_credentials|auth|credentials|ec2|endpoint_filter|endpoint_groups|endpoint_policy|endpoints|domain_configs|domains|federation|groups|limits|policies|projects|registered_limits|regions|role_assignments|roles|inference_rules|services|simple_cert|tokens|trusts|users).*$",
         )
-        self.checker.set_option("skip-functions", r"^delete_.+$")
-        self.checker.set_option(
+        self.checker.linter.set_option("skip-functions", r"^delete_.+$")
+        self.checker.linter.set_option(
             "skip-modules",
             r"^src\.db\.task$,^src\.db\.tasks\..+$,^src\.worker\..+$,^src\.tests\..+$",
         )
-        self.checker.set_option("skip-decorated", r"^thread$")
+        self.checker.linter.set_option("skip-decorated", r"^thread$")
         self.checker.linter.current_name = "test_file.py"
 
     def test_check_unnamed_functions_ignored(self):
@@ -75,9 +77,7 @@ class TestBlockingCallsChecker(pylint.testutils.CheckerTestCase):
             pylint.testutils.MessageTest(
                 msg_id="blocking-call",
                 node=calls[3],
-                args=(
-                    "nested_sync_blocking_function -> sync_blocking_function -> barbican.secrets.get",
-                ),
+                args=("nested_sync_blocking_function -> sync_blocking_function -> barbican.secrets.get",),
             ),
             ignore_position=True,
         ):
@@ -129,9 +129,7 @@ class TestBlockingCallsChecker(pylint.testutils.CheckerTestCase):
             pylint.testutils.MessageTest(
                 msg_id="blocking-call",
                 node=calls[8],
-                args=(
-                    "Object.object_blocking_method -> sync_blocking_function -> barbican.secrets.get",
-                ),
+                args=("Object.object_blocking_method -> sync_blocking_function -> barbican.secrets.get",),
             ),
             ignore_position=True,
         ):
@@ -220,9 +218,7 @@ class TestBlockingCallsChecker(pylint.testutils.CheckerTestCase):
         """
         )
         messages = [
-            pylint.testutils.MessageTest(
-                msg_id="blocking-call", node=call, args=(helpers.get_call_name(call),)
-            )
+            pylint.testutils.MessageTest(msg_id="blocking-call", node=call, args=(helpers.get_call_name(call),))
             for call in calls
         ]
         with self.assertAddsMessages(
